@@ -1,97 +1,271 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>台灣美食猜猜樂 + 折扣計算器</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: 'Microsoft JhengHei','微軟正黑體',Arial,sans-serif; background:#f0f4f8; }
-    .container { max-width: 900px; margin:2rem auto; padding:1rem; }
-    .dialog-box { max-width:500px; margin:2rem auto; padding:1.5rem; background:#fff8f0; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);} 
-    .question { font-size:18px; margin-bottom:15px; color:#e67e22; }
-    .btn { padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-size:16px; margin:3px; }
-    .btn-yes { background:#27ae60; color:white; }
-    .btn-no { background:#e74c3c; color:white; }
-    .btn-other { background:#f39c12; color:white; }
-    .result { margin-top:20px; padding:15px; background:#e8f4f8; border-radius:5px; }
-    table { width:100%; border-collapse:collapse; margin-bottom:20px; }
-    th, td { border:1px solid #ddd; padding:8px; text-align:left; }
-    th { background:#f39c12; color:white; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>超商特價 + 折扣計算器 + 美食猜猜樂</title>
+<style>
+  body { 
+    font-family: 'Microsoft JhengHei', sans-serif; 
+    background:#f2f2f2; 
+    margin:0; 
+    padding:0; 
+  }
+  .container { 
+    max-width: 1000px; 
+    margin: 2rem auto; 
+    padding: 1rem; 
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 20px;
+  }
+
+  /* 超商特價區 - 縮小寬度 */
+  .promo-section { 
+    grid-column: 1;
+    display: flex; 
+    flex-direction: column;
+    gap: 20px; 
+    margin-bottom: 30px; 
+  }
+  .promo-card { 
+    background:white; 
+    padding:15px; 
+    border-radius:15px; 
+    box-shadow:0 5px 15px rgba(0,0,0,0.1); 
+    width: 100%;
+  }
+  .promo-card h2 { 
+    margin:0 0 10px 0; 
+    font-size:18px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .promo-card table { 
+    width:100%; 
+    border-collapse: collapse; 
+    font-size:14px; 
+  }
+  .promo-card th, .promo-card td { 
+    text-align:left; 
+    padding:5px; 
+    border-bottom:1px solid #ddd; 
+  }
+  .promo-btn { 
+    padding:5px 10px; 
+    background:#3498db; 
+    color:white; 
+    border:none; 
+    border-radius:5px; 
+    cursor:pointer; 
+    font-size: 12px;
+  }
+
+  /* 右側內容區 */
+  .right-section {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* 折扣計算器 */
+  .calc-section { 
+    background:white; 
+    padding:15px; 
+    border-radius:15px; 
+    box-shadow:0 5px 15px rgba(0,0,0,0.1); 
+  }
+  .calc-section input, .calc-section select { 
+    width:100%; 
+    padding:8px; 
+    margin-top:5px; 
+    margin-bottom:10px; 
+    border-radius:5px; 
+    border:1px solid #ccc; 
+  }
+  .calc-section button { 
+    padding:8px 15px; 
+    border:none; 
+    background:#27ae60; 
+    color:white; 
+    border-radius:5px; 
+    cursor:pointer; 
+  }
+
+  /* 美食猜猜樂 - 改善按鈕間距 */
+  .dialog-box { 
+    background:#fff5e6; 
+    padding:20px; 
+    border-radius:15px; 
+    box-shadow:0 5px 20px rgba(0,0,0,0.1); 
+    border:2px solid #ff9f43; 
+    text-align:center; 
+  }
+  .dialog-box h2 { 
+    margin-top:0; 
+    color:#e67e22; 
+  }
+  .question { 
+    font-size:18px; 
+    margin-bottom:15px; 
+  }
+  .btn-group { 
+    display:flex; 
+    justify-content: center;
+    gap: 15px; /* 增加按鈕間距 */
+    flex-wrap: wrap;
+    margin-bottom:10px; 
+  }
+  .btn { 
+    padding:12px 20px; /* 增大按鈕尺寸 */
+    border:none; 
+    border-radius:8px; 
+    cursor:pointer; 
+    font-weight:bold; 
+    font-size:16px; 
+    min-width: 100px; /* 確保按鈕有最小寬度 */
+  }
+  .btn-yes { background:#27ae60; color:white; }
+  .btn-no { background:#e74c3c; color:white; }
+  .btn-other { background:#f39c12; color:white; }
+  .result { 
+    display:none; 
+    margin-top:20px; 
+    padding:15px; 
+    background:#e8f4f8; 
+    border-radius:8px; 
+  }
+  
+  /* 美食選項按鈕樣式 */
+  .food-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+  }
+  
+  /* 響應式設計 */
+  @media (max-width: 768px) {
+    .container {
+      grid-template-columns: 1fr;
+    }
+    .promo-section, .right-section {
+      grid-column: 1;
+    }
+    .btn-group {
+      flex-direction: column;
+      align-items: center;
+    }
+    .btn {
+      width: 100%;
+      max-width: 250px;
+    }
+  }
+</style>
 </head>
 <body>
-<div class="container">
-  <h1 class="text-2xl font-bold mb-4">全家 / 7-ELEVEN 特價時段</h1>
-  
-  <table>
-    <thead>
-      <tr><th>超商</th><th>品項</th><th>適用日</th><th>時段</th><th>備註</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>7-ELEVEN</td><td>i珍食（上午場）</td><td>每日</td><td>10:00–17:00</td><td>65折</td></tr>
-      <tr><td>7-ELEVEN</td><td>i珍食（晚間場）</td><td>每日</td><td>20:00–03:00</td><td>65折</td></tr>
-      <tr><td>全家 FamilyMart</td><td>友善時光 鮮食</td><td>每日</td><td>17:00–24:00</td><td>7折</td></tr>
-    </tbody>
-  </table>
 
-  <!-- 折扣計算器 -->
-  <div class="p-4 rounded-2xl shadow bg-white mb-6">
-    <h2 class="font-semibold mb-3">折扣計算器（無條件捨去）</h2>
-    <input id="price" type="number" placeholder="原價" class="border px-3 py-2 rounded w-full mb-2">
-    <select id="discount" class="border px-3 py-2 rounded w-full mb-2">
-      <option value="0.65">65折</option>
-      <option value="0.70">7折</option>
-    </select>
-    <button onclick="calc()" class="btn btn-yes">計算</button>
-    <p class="mt-2">折後： <span id="result">-</span> 元</p>
+<div class="container">
+
+  <!-- 超商特價 -->
+  <div class="promo-section" id="promo-section">
+    <!-- JS 生成 -->
   </div>
 
-  <!-- 美食猜猜樂 -->
-  <div class="dialog-box">
-    <h2>🍜 台灣美食猜猜樂</h2>
-    <div id="game-container">
-      <div class="question" id="question-text">請在心中想一種台灣美食，準備好後開始遊戲！</div>
-      <div class="btn-group" id="button-group">
-        <button class="btn btn-yes" onclick="startGame()">開始遊戲</button>
+  <!-- 右側內容區 -->
+  <div class="right-section">
+    <!-- 折扣計算器 -->
+    <div class="calc-section">
+      <h3>折扣計算器（無條件捨去整數）</h3>
+      <label>原價（數字）</label>
+      <input id="price" type="number" min="0" placeholder="輸入金額，例如120.5">
+      <label>選擇折扣</label>
+      <select id="discount">
+        <option value="0.65">65 折</option>
+        <option value="0.70">7 折</option>
+      </select>
+      <button onclick="calc()">計算</button>
+      <p>折後價格：<span id="result">-</span> 元</p>
+    </div>
+
+    <!-- 美食猜猜樂 -->
+    <div class="dialog-box">
+      <h2>🍜 台灣美食猜猜樂</h2>
+      <div id="game-container">
+        <div class="question" id="question-text">請在心中想一種台灣美食，準備好後開始遊戲！</div>
+        <div class="btn-group" id="button-group">
+          <button class="btn btn-yes" onclick="startGame()">開始遊戲</button>
+        </div>
+        <div class="result" id="result-box"></div>
       </div>
-      <div class="result" id="result-box" style="display:none;"></div>
     </div>
   </div>
+
 </div>
 
 <script>
-  // 折扣計算器
-  function calc() {
-    const p = Number(document.getElementById('price').value);
-    const factor = Number(document.getElementById('discount').value);
-    if (!isFinite(p) || p<0) { document.getElementById('result').textContent='請輸入有效數字'; return; }
-    document.getElementById('result').textContent = Math.floor(p*factor);
+  // ===== 超商特價 JS =====
+  const PROMOS = [
+    { chain:"7-ELEVEN", items:[ {name:"i珍食（上午場）", days:"每日", time:"10:00–17:00", remark:"65折"}, {name:"i珍食（晚間場）", days:"每日", time:"20:00–03:00", remark:"65折"} ] },
+    { chain:"全家 FamilyMart", items:[ {name:"友善時光 鮮食", days:"每日", time:"17:00–24:00", remark:"7折"} ] }
+  ];
+
+  const promoSection = document.getElementById('promo-section');
+  PROMOS.forEach(shop => {
+    const div = document.createElement('div');
+    div.className = 'promo-card';
+    let html = `<h2>${shop.chain} <button class="promo-btn" onclick="openMaps('${shop.chain.includes('7')?'7-ELEVEN':'全家 便利商店'}')">附近門市</button></h2>`;
+    html += `<table><thead><tr><th>品項</th><th>適用日</th><th>時段</th><th>備註</th></tr></thead><tbody>`;
+    shop.items.forEach(it => { html += `<tr><td>${it.name}</td><td>${it.days}</td><td>${it.time}</td><td>${it.remark}</td></tr>`; });
+    html += `</tbody></table>`;
+    div.innerHTML = html;
+    promoSection.appendChild(div);
+  });
+
+  function openMaps(keyword){
+    const q = encodeURIComponent(keyword);
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        pos=>window.open(`https://www.google.com/maps/search/${q}/@${pos.coords.latitude},${pos.coords.longitude},15z`,'_blank'),
+        ()=>window.open(`https://www.google.com/maps/search/${q}`,'_blank'),
+        {enableHighAccuracy:true,timeout:8000}
+      );
+    } else { window.open(`https://www.google.com/maps/search/${q}`,'_blank'); }
   }
 
-  // 美食猜猜樂
+  // ===== 折扣計算器 JS =====
+  function calc(){
+    const p = Number(document.getElementById('price').value);
+    const f = Number(document.getElementById('discount').value);
+    if(!isFinite(p)||p<0){document.getElementById('result').textContent='請輸入有效數字'; return;}
+    document.getElementById('result').textContent = Math.floor(p*f);
+  }
+
+  // ===== 美食猜猜樂 JS =====
   const questions = [
     "主食是米飯類的嗎？",
     "這道菜通常作為正餐食用嗎？",
     "這道菜屬於台式風味嗎？"
   ];
-
   const foodDatabase = {
     "rice_meal_taiwanese":["滷肉飯","控肉飯","豬腳飯","便當","海鮮粥","皮蛋瘦肉粥"],
     "rice_meal_other":["咖哩飯","鰻魚飯","石鍋拌飯"],
     "rice_snack_taiwanese":["筒仔米糕","油飯","飯糰"],
-    "noodle_meal_taiwanese":["牛肉麵","榨菜肉絲麵","陽春麵","擔仔麵","麻醬麵","排骨酥麵","鴨肉麵","意麵","炒麵"],
+    "noodle_meal_taiwanese":["牛肉麵","榨菜肉絲麵","陽春麵","擔仔麵","麻醬麵"],
     "noodle_meal_other":["拉麵","義大利麵"],
-    "other_meal_taiwanese":["水餃","鍋貼","小籠包","包子","藥燉排骨","火鍋"],
-    "other_meal_other":["pizza","漢堡"],
-    "other_snack_taiwanese":["肉圓","蚵仔煎","蔥油餅","胡椒餅","潤餅","割包","蛋餅","鹽酥雞","臭豆腐","關東煮","車輪餅"]
+    "other_snack_taiwanese":["肉圓","蚵仔煎","蔥油餅","胡椒餅","潤餅","蛋餅","鹽酥雞"]
   };
 
-  let currentAnswers=[],currentQuestion=0;
+  let currentAnswers=[], currentQuestion=0;
 
-  function startGame(){
-    currentAnswers=[]; currentQuestion=0;
-    showQuestion(0);
+  function startGame(){ 
+    currentAnswers=[]; 
+    currentQuestion=0; 
+    showQuestion(0); 
+    document.getElementById('result-box').style.display='none'; 
   }
 
   function showQuestion(index){
@@ -101,31 +275,48 @@
       qText.textContent=`問題 ${index+1}/${questions.length}: ${questions[index]}`;
       btnGroup.innerHTML=`<button class="btn btn-yes" onclick="answerQuestion(true)">是</button>
                           <button class="btn btn-no" onclick="answerQuestion(false)">否</button>`;
-    } else { showResult(); }
+    } else { 
+      showResult(); 
+    }
   }
 
-  function answerQuestion(ans){ currentAnswers.push(ans); currentQuestion++; showQuestion(currentQuestion); }
+  function answerQuestion(ans){
+    currentAnswers.push(ans); 
+    currentQuestion++; 
+    showQuestion(currentQuestion);
+  }
 
   function showResult(){
-    const stapleType = currentAnswers[0]?'rice':(currentAnswers[1]?'noodle':'other');
-    const occasion = currentAnswers[1]?'meal':'snack';
-    const cuisine = currentAnswers[2]?'taiwanese':'other';
-    const key = `${stapleType}_${occasion}_${cuisine}`;
-    const foods = foodDatabase[key] || ["無法確定，請再試一次！"];
-    const randomFood = foods[Math.floor(Math.random()*foods.length)];
-
+    const stapleType=currentAnswers[0]?'rice':'other';
+    const occasion=currentAnswers[1]?'meal':'snack';
+    const cuisine=currentAnswers[2]?'taiwanese':'other';
+    const key=`${stapleType}_${occasion}_${cuisine}`;
+    const foods=foodDatabase[key]||["無法確定，請再試一次！"];
+    const resDiv=document.getElementById('result-box');
     const qText=document.getElementById('question-text');
-    const btnGroup=document.getElementById('button-group');
-    const resBox=document.getElementById('result-box');
-
-    qText.textContent="遊戲完成！";
-    btnGroup.innerHTML='';
-    resBox.style.display='block';
-    resBox.innerHTML=`🎉 我猜您想的是：<br>
-                     <a href="https://www.google.com/maps/search/${encodeURIComponent(randomFood)}" target="_blank" class="btn btn-yes">${randomFood}</a>
-                     <br><button class="btn btn-other" onclick="startGame()">再玩一次</button>`;
+    qText.textContent="猜測結果 🎉";
+    resDiv.style.display='block';
+    
+    // 創建美食選項按鈕
+    let foodButtons = '';
+    foods.forEach(food => {
+      foodButtons += `<button class="btn btn-other" onclick="openMaps('${food}')">${food}</button>`;
+    });
+    
+    resDiv.innerHTML = `
+      <p>您心中想的是以下其中一種美食嗎？</p>
+      <div class="food-options">
+        ${foodButtons}
+      </div>
+      <button class="btn btn-yes" onclick="startGame()" style="margin-top: 15px;">再玩一次</button>
+    `;
+    
+    document.getElementById('button-group').innerHTML='';
   }
 </script>
+
 </body>
 </html>
+</html>
+
 
