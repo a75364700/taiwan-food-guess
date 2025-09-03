@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台灣美食猜猜樂 + 折扣計算器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Microsoft JhengHei','微軟正黑體',Arial,sans-serif; background:#f0f4f8; }
+    .container { max-width: 900px; margin:2rem auto; padding:1rem; }
+    .dialog-box { max-width:500px; margin:2rem auto; padding:1.5rem; background:#fff8f0; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);} 
+    .question { font-size:18px; margin-bottom:15px; color:#e67e22; }
+    .btn { padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-size:16px; margin:3px; }
+    .btn-yes { background:#27ae60; color:white; }
+    .btn-no { background:#e74c3c; color:white; }
+    .btn-other { background:#f39c12; color:white; }
+    .result { margin-top:20px; padding:15px; background:#e8f4f8; border-radius:5px; }
+    table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:left; }
+    th { background:#f39c12; color:white; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="text-2xl font-bold mb-4">全家 / 7-ELEVEN 特價時段</h1>
+  
+  <table>
+    <thead>
+      <tr><th>超商</th><th>品項</th><th>適用日</th><th>時段</th><th>備註</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>7-ELEVEN</td><td>i珍食（上午場）</td><td>每日</td><td>10:00–17:00</td><td>65折</td></tr>
+      <tr><td>7-ELEVEN</td><td>i珍食（晚間場）</td><td>每日</td><td>20:00–03:00</td><td>65折</td></tr>
+      <tr><td>全家 FamilyMart</td><td>友善時光 鮮食</td><td>每日</td><td>17:00–24:00</td><td>7折</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 折扣計算器 -->
+  <div class="p-4 rounded-2xl shadow bg-white mb-6">
+    <h2 class="font-semibold mb-3">折扣計算器（無條件捨去）</h2>
+    <input id="price" type="number" placeholder="原價" class="border px-3 py-2 rounded w-full mb-2">
+    <select id="discount" class="border px-3 py-2 rounded w-full mb-2">
+      <option value="0.65">65折</option>
+      <option value="0.70">7折</option>
+    </select>
+    <button onclick="calc()" class="btn btn-yes">計算</button>
+    <p class="mt-2">折後（無條件捨去整數）： <span id="result">-</span> 元</p>
+  </div>
+
+  <!-- 美食猜猜樂 -->
+  <div class="dialog-box">
+    <h2>🍜 台灣美食猜猜樂</h2>
+    <div id="game-container">
+      <div class="question" id="question-text">請在心中想一種台灣美食，準備好後開始遊戲！</div>
+      <div class="btn-group" id="button-group">
+        <button class="btn btn-yes" onclick="startGame()">開始遊戲</button>
+      </div>
+      <div class="result" id="result-box" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 折扣計算器
+  function calc() {
+    const p = Number(document.getElementById('price').value);
+    const factor = Number(document.getElementById('discount').value);
+    if (!isFinite(p) || p<0) { document.getElementById('result').textContent='請輸入有效數字'; return; }
+    document.getElementById('result').textContent = Math.floor(p*factor);
+  }
+
+  // 美食猜猜樂
+  const questions = [
+    "主食是米飯類的嗎？",
+    "這道菜通常作為正餐食用嗎？",
+    "這道菜屬於台式風味嗎？"
+  ];
+
+  const foodDatabase = {
+    "rice_meal_taiwanese":["滷肉飯","控肉飯","豬腳飯","便當","海鮮粥","皮蛋瘦肉粥"],
+    "rice_meal_other":["咖哩飯","鰻魚飯","石鍋拌飯"],
+    "rice_snack_taiwanese":["筒仔米糕","油飯","飯糰"],
+    "noodle_meal_taiwanese":["牛肉麵","榨菜肉絲麵","陽春麵","擔仔麵","麻醬麵","排骨酥麵","鴨肉麵","意麵","炒麵"],
+    "noodle_meal_other":["拉麵","義大利麵"],
+    "other_meal_taiwanese":["水餃","鍋貼","小籠包","包子","藥燉排骨","火鍋"],
+    "other_meal_other":["pizza","漢堡"],
+    "other_snack_taiwanese":["肉圓","蚵仔煎","蔥油餅","胡椒餅","潤餅","割包","蛋餅","鹽酥雞","臭豆腐","關東煮","車輪餅"]
+  };
+
+  let currentAnswers=[],currentQuestion=0;
+
+  function startGame(){
+    currentAnswers=[]; currentQuestion=0;
+    showQuestion(0);
+  }
+
+  function showQuestion(index){
+    const qText=document.getElementById('question-text');
+    const btnGroup=document.getElementById('button-group');
+    if(index<questions.length){
+      qText.textContent=`問題 ${index+1}/${questions.length}: ${questions[index]}`;
+      btnGroup.innerHTML=`<button class="btn btn-yes" onclick="answerQuestion(true)">是</button>
+                          <button class="btn btn-no" onclick="answerQuestion(false)">否</button>`;
+    } else { showResult(); }
+  }
+
+  function answerQuestion(ans){ currentAnswers.push(ans); currentQuestion++; showQuestion(currentQuestion); }
+
+  function showResult(){
+    const stapleType = currentAnswers[0]?'rice':(currentAnswers[1]?'noodle':'other');
+    const occasion = currentAnswers[1]?'meal':'snack';
+    const cuisine = currentAnswers[2]?'taiwanese':'other';
+    const key = `${stapleType}_${occasion}_${cuisine}`;
+    const foods = foodDatabase[key] || ["無法確定，請再試一次！"];
+    const randomFood = foods[Math.floor(Math.random()*foods.length)];
+
+    const qText=document.getElementById('question-text');
+    const btnGroup=document.getElementById('button-group');
+    const resBox=document.getElementById('result-box');
+
+    qText.textContent="遊戲完成！";
+    btnGroup.innerHTML='';
+    resBox.style.display='block';
+    resBox.innerHTML=`🎉 我猜您想的是：<br>
+                     <a href="https://www.google.com/maps/search/${encodeURIComponent(randomFood)}" target="_blank" class="btn btn-yes">${randomFood}</a>
+                     <br><button class="btn btn-other" onclick="startGame()">再玩一次</button>`;
+  }
+</script>
+</body>
+</html>
